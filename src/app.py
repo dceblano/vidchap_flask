@@ -1,14 +1,17 @@
 import os
 import torch
 import boto3
+import sys
 
 from flask import Flask, request, jsonify
 from transformers import BartForConditionalGeneration, BartTokenizer, BertTokenizer, BertForSequenceClassification
-from pipelines.model1_prediction_pipeline import Model1Pipeline
-from pipelines.model2_prediction_pipeline import Model2Pipeline
 from dotenv import load_dotenv
 from botocore.exceptions import ClientError
 
+# Add the parent directory to the system path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from pipelines.model1_prediction_pipeline import Model1Pipeline
+from pipelines.model2_prediction_pipeline import Model2Pipeline
 
 # Load environment variables from .env file
 load_dotenv()
