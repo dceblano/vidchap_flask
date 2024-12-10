@@ -105,4 +105,5 @@ if __name__ == '__main__':
     load_model_from_s3(BUCKET_NAME, 'model/best_bert_model')
     load_model_from_s3(BUCKET_NAME, 'model/best_bart_model')
     
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
