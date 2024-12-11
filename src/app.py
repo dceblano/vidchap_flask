@@ -90,6 +90,9 @@ def load_bart_model():
 model1_pipeline = None
 model2_pipeline = None
 
+PROXY_USER = os.getenv("PROXY_USER")
+PROXY_PASSWORD = os.getenv("PROXY_PASSWORD")
+
 def initialize_models_and_pipelines():
     global model1_pipeline, model2_pipeline
 
@@ -103,7 +106,7 @@ def initialize_models_and_pipelines():
         model2, model2_tokenizer = load_bart_model()
 
         # Initialize the pipelines
-        model1_pipeline = Model1Pipeline(model1, model1_tokenizer, device)
+        model1_pipeline = Model1Pipeline(model1, model1_tokenizer, device, PROXY_USER, PROXY_PASSWORD)
         model2_pipeline = Model2Pipeline(model2, model2_tokenizer, device)
         
         print("Models and pipelines successfully initialized.")

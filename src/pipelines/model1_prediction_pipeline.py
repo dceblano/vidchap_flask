@@ -6,17 +6,26 @@ import contractions
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import requests
 
 from tqdm import tqdm
 from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api.formatters import SRTFormatter
 from contractions import fix
 from torch.utils.data import DataLoader
 
 class Model1Pipeline:
-    def __init__(self, model, tokenizer, device):
+    def __init__(self, model, tokenizer, device, proxy_username, proxy_password):
         self.model = model
         self.tokenizer = tokenizer
         self.device = device
+        self.proxy_auth = (proxy_username, proxy_password)
+        self.proxy_url = f'http://{proxy_username}:{proxy_password}@gate.smartproxy.com:10001'
+        self.session = requests.Session()
+        self.session.proxies = {
+            'http': self.proxy_url,
+            'https': self.proxy_url
+        }
 
     def get_records_from_model1(self, video_id):
         
@@ -56,8 +65,19 @@ class Model1Pipeline:
     
     def get_transcriptions(self, video_id):
         try:
+            # Log the proxy being used
+            print(f"Using proxy: {self.proxy_url}")
+
+            # Verify the IP before making a request
+            ip_info_before = self.session.get("https://ipinfo.io").json()
+            print(f"IP before fetching transcript: {ip_info_before['ip']}")
+
             # Call the YouTubeTranscriptApi to get video transcripts
             transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
+
+            # Verify the IP after the request
+            ip_info_after = self.session.get("https://ipinfo.io").json()
+            print(f"IP after fetching transcript: {ip_info_after['ip']}")
 
             # Convert the transcript list to a DataFrame
             data = []
@@ -486,3 +506,4 @@ class BinaryClassificationDataset(torch.utils.data.Dataset):
         item['labels'] = self.labels[idx].clone().detach().float()
 
         return item
+    
