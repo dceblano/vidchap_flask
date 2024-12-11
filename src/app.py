@@ -90,7 +90,6 @@ def load_bart_model():
 model1_pipeline = None
 model2_pipeline = None
 
-@app.before_first_request
 def initialize_models_and_pipelines():
     global model1_pipeline, model2_pipeline
 
@@ -111,6 +110,9 @@ def initialize_models_and_pipelines():
 
     except Exception as e:
         print(f"Failed to initialize models and pipelines: {e}")
+
+# Initialize models and pipelines before the first request
+initialize_models_and_pipelines()
 
 @app.route('/vidchap/chaptering', methods=['POST'])
 def chaptering():
