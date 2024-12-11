@@ -29,7 +29,7 @@ class Model1Pipeline:
 
     def get_records_from_model1(self, video_id):
         
-        df_transcript = self.get_transcriptions(video_id)
+        df_transcript = self.get_transcriptions_with_proxy(video_id)
         print('YT transcript dataframe')
         print(df_transcript.shape)
         print(df_transcript.head())
@@ -62,6 +62,46 @@ class Model1Pipeline:
         
         # = pd.read_csv("dataset/df_transformed_features.csv")
         return df[df["video_id"] == video_id]
+    
+    # Function to get IP address using the proxy
+    def get_ip_with_proxy(self):
+        session = requests.Session()
+        session.proxies = {
+            'http': self.proxy_url,
+            'https': self.proxy_url
+        }
+        response = session.get('http://ipinfo.io')
+        return response.json()
+
+    # Function to fetch transcripts using the proxy and check IP
+    def get_transcriptions_with_proxy(self, video_id):
+        try:
+            # Print IP before using the proxy (via proxy)
+            ip_before = self.get_ip_with_proxy()
+            print(f"IP before fetching transcript (with proxy): {ip_before['ip']}")
+
+            # Fetch transcript using the proxy
+            transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
+
+            # Print IP after fetching the transcript (confirming if it's still routed via the proxy)
+            ip_after = self.get_ip_with_proxy()
+            print(f"IP after fetching transcript (with proxy): {ip_after['ip']}")
+
+           # Convert the transcript list to a DataFrame
+            data = []
+            for entry in transcript_list:
+                start_time = entry['start']
+                duration = entry['duration']
+                text = entry['text']
+                end_time = start_time + duration
+                data.append([video_id, start_time, end_time, text])
+
+            df = pd.DataFrame(data, columns=['video_id', 'start_time', 'end_time', 'transcript'])
+            return df
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return []
     
     def get_transcriptions(self, video_id):
         try:
